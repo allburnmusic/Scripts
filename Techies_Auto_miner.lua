@@ -8,6 +8,7 @@ require("libs.ScriptConfig") --This one is so I can set a hotkey and the user ca
 config = ScriptConfig.new()
 config:SetParameter("ComboKey", "H", config.TYPE_HOTKEY) 
 config:SetParameter("StopKey", "S", config.TYPE_HOTKEY) 
+config:SetParameter("ToggleKey", "J", config.TYPE_HOTKEY) 
 config:Load()
 
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
@@ -15,6 +16,7 @@ config:Load()
 --Some variables we gotta set (Well we don't have to, just makes our lives easier) 
 local ComboKey     = config.ComboKey   -- So when we refer to our key we can just say "ComboKey", rather than config.ComboKey everytime
 local StopKey      = config.StopKey    -- If we want to cancel the combo
+local ToggleKey      = config.ToggleKey    -- If we want to cancel the combo
 local active	   = false             --Initially the Combo will not be active until we press a hotkey
 
 local registered   = false            --Used when closing and opening the script 
@@ -22,7 +24,7 @@ local registered   = false            --Used when closing and opening the script
 --We don't really need these this time, but 90% of the time they are really useful :)
 local range 	= 1200                 --The range of our script, lets just make it the blink dagger range for this example
 local target    = nil                  --Initially there should be no target unless we try to find one
-
+local mine = 1
 ----------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 --TEXT INGAME (If you wanna set the location of the text then change the numbers on the line under this one)
@@ -58,12 +60,25 @@ function Key(msg,code)
 	
 	if code == ComboKey then  -- If I press D then my script is "Active"
 		active = true   
-		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Now Active and mining on mouse location",font)
+		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Active on mouse location",font)
 	end
 	
 	if code == StopKey then     -- If I press S then my script is not "Active"
 		active = false               
-		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Now Inactive",font)		
+		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Inactive",font)		
+	end
+	
+		if code == ToggleKey then     -- If I press J toggle bombs
+		if mine == 1 then
+		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Now Mining Green Bombs",font)		
+		mine = 2
+		return
+		end
+		if mine == 2 then
+		statusText = drawMgr:CreateText(x*monitor,y*monitor,0x5DF5F5FF,"Techies AutoMiner || Now Mining Red Bombs",font)			
+		mine = 1
+		return
+		end
 	end
 	
 end
@@ -81,8 +96,10 @@ function Main(tick)  --The tick is a function that is run constantly
     if not me then return end  --If the player is not me, then the tick function would end here.
 	
 --Now lets get what we need for the Combo (Note, all of these use "me")
-    local RedMine = me:GetAbility(1) 
+    local RedMine = me:GetAbility(6) 
+	local GreenMine = me:GetAbility(6) 
 	local times = {19000,16000,13000,10000}
+
 
 --Now the actual Combo
     if active then --If I've pressed the ComboKey, then this is true, as soon as I press the StopKey, this becomes false and stops the combo :)
@@ -91,25 +108,34 @@ function Main(tick)  --The tick is a function that is run constantly
 
 	   mijnlocatie = Vector(client.mousePosition.x, client.mousePosition.y, 0)
 	   lags = client.latency/1000
-	   time = times[RedMine.level] -- wachttijd mijn 
+	   time1 = times[RedMine.level] -- wachttijd mijn 
+	   time2 = 10000
 
 	   -- plant mijn
+	   if mine == 1 then
 	   me:SafeCastAbility(RedMine, mijnlocatie)
-
+	   Sleep(time1,"mijn")
+		end
+		if mine == 2 then
+	   me:SafeCastAbility(RedMine, mijnlocatie)
+	   Sleep(time2,"mijn")
+		end
 	   -- wacht tijd
-	    Sleep(time,"mijn")
+
 
 	    if SleepCheck("mijn") then
+		if mine == 1 then
         me:CastAbility(RedMine, mijnlocatie) -- als de tijd is afgelopen plaatsen we nog een mijn
+		end 
+		if mine == 2 then
+		me:CastAbility(GreenMine, mijnlocatie) -- als de tijd is afgelopen plaatsen we nog een mijn
+		end
     	end
 	   -- rinse and repeat
 
 	return
     end
 end
-	end   		
-    end
-	
 end
 
 --When the game ends

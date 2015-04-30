@@ -1,16 +1,22 @@
---<<Axe Script by Moones Version 1.3, Auto Call and Blink+Ulti when enemy is killable.>>
+--<<Axe Script by Moones Version 1.3.2 Modded by d000000h.>>
 --[[
 	-------------------------------------
 	|       Axe Script by Moones        |
 	-------------------------------------
-	============ Version 1.3 ============
-	modded by d000000h
+	ALL CREDIT FOR THIS GOES TO THE LORD OF DOTA2 SCRIPTS 
+	
+	MOONES
+	
+	============ Version 1.3.2 ============
+	modded by d000000h v2
 	
 	Added Auto Blademail + icon 
 	Auto Buckler
 	Auto Pipe
 	Auto Crimson 
 	Auto Shivas
+	Auto Manta
+	Auto BKB
 	 
 	Description:
 	------------	
@@ -78,6 +84,8 @@ function Tick(tick)
 	local Pipes = me:FindItem("item_pipe")
 	local Shivas = me:FindItem("item_shivas_guard")
 	local Bucklers = me:FindItem("item_buckler")
+	local BkB = me:FindItem("item_black_king_bar")
+	local Manta = me:FindItem("item_manta")
 	local call = me:GetAbility(1)
 	
 	if Cullblade.level > 0 or call.level > 0 then
@@ -164,6 +172,12 @@ function Tick(tick)
 										end
 										if Bucklers then
 										me:SafeCastItem("item_buckler")
+										end
+										if BkB then
+										me:SafeCastItem("item_black_king_bar")
+										end
+										if Manta then
+										me:SafeCastItem("item_manta")
 										end
 									end
 								elseif callvictim and v == callvictim and call.abilityPhase and SleepCheck("callstop") and Animations.getDuration(call) > 0.2 then
